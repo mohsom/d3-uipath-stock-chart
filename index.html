@@ -6,9 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>d3-uipath-stock</title>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <style>
+        .chart > svg {
+            border: 1px solid;
+        }
+
+        .x-axis .domain, .x-axis .tick line {
+            stroke: #e0e0e0;
+        }
+
+        .x-axis .tick text,  .y-axis .tick text {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .y-axis .domain {
+            stroke: #e0e0e0;
+        }
+
+        .y-axis .tick line {
+            stroke-dasharray: 5;
+            stroke: #e0e0e0;
+        }
+    </style>
 </head>
 <body>
     <h1>D3</h1>
+
+    <div class="chart"></div>
 
     <script src="./app.js"></script>
 </body>

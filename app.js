@@ -52,8 +52,8 @@ const ready = (data) => {
         .tickSizeInner(-width);
 
     const yAxisDraw = svg
-        .attr('class', 'y-axis')
         .append('g')
+        .attr('class', 'y-axis')
         .call(yAxis);
 
 
@@ -71,6 +71,35 @@ const ready = (data) => {
         .attr('d', (d) => lineGen(d.values))
         .style('fill', 'none')
         .style('stroke', '#ff8a65');
+
+
+    const tip = d3.select('.tooltip');
+    d3.select('.chart')
+        .on('mouseover', (e) => {
+
+            const bodyData = [
+                ['Date', 'd'],
+                ['Price', 'Price']
+            ];
+
+            tip.style('left', `${e.clientX}px`);
+            tip.style('top', `${e.clientY}px`);
+            tip.style('opacity', 1);
+
+            d3.select('.tip-body')
+                .selectAll('p')
+                .data(bodyData)
+                .join('p')
+                .attr('class', 'tip-info')
+                .html(d => `${d[0]}: ${d[1]}`)
+        })
+        .on('mousemove', (e) => {
+            tip.style('left', `${e.clientX}px`);
+            tip.style('top', `${e.clientY}px`);
+        })
+        .on('mouseout', (e) => {
+            tip.style('opacity', 0);
+        });
 };
 
 d3.csv('https://www.marketwatch.com/investing/stock/path/downloaddatapartial?startdate=01/03/2022 00:00:00&enddate=11/02/2022 23:59:59&daterange=d30&frequency=p1d&csvdownload=true&downloadpartial=false&newdates=false', type).then((data) => {

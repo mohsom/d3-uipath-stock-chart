@@ -64,11 +64,11 @@ const ready = (data) => {
 
     chartGroup
         .selectAll('.line-series')
-        .data(sorted)
+        .data([{ values: sorted }])
         .enter()
         .append('path')
-        .attr('class', d => `line-series-${d.date}`)
-        .attr('d', () => lineGen(sorted))
+        .attr('class', `line-series`)
+        .attr('d', (d) => lineGen(d.values))
         .style('fill', 'none')
         .style('stroke', '#ff8a65');
 };

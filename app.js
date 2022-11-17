@@ -181,8 +181,6 @@ const renderHeatmapChart = (data) => {
             .range(["white", "#69b3a2"])
             .domain([d3.min(d, d => d.avgVolume), d3.max(d, d => d.avgVolume)])
 
-        console.log(xExtent, yExtent);
-
         return { xScale, yScale, colorScale };
     };
 

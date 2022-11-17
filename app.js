@@ -1,11 +1,9 @@
-const type = (d) => ({ date: new Date(d.Date).getTime(), price: +d.Close });
+const renderLineChart = (data) => {
+    const formatDate = (x) => {
+        const date = new Date(x);
+        return `${date.getDate() + 1}/${date.getMonth() + 1}/${date.getFullYear()}`
+    };
 
-const formatDate = (x) => {
-    const date = new Date(x);
-    return `${date.getDate() + 1}/${date.getMonth() + 1}/${date.getFullYear()}`
-};
-
-const ready = (data) => {
     const sorted = data.sort((a, b) => d3.ascending(a.date, b.date));
     const margin = { top: 40, left: 40, bottom: 40, right: 40 };
 
@@ -39,7 +37,7 @@ const ready = (data) => {
         .ticks(8)
         .tickSizeOuter(0);
 
-    const xAxisDraw = svg
+    svg
         .append('g')
         .attr('class', 'x-axis')
         .attr('transform', `translate(0, ${height})`)
@@ -51,7 +49,7 @@ const ready = (data) => {
         .tickSizeOuter(0)
         .tickSizeInner(-width);
 
-    const yAxisDraw = svg
+    svg
         .append('g')
         .attr('class', 'y-axis')
         .call(yAxis);
@@ -141,7 +139,9 @@ const ready = (data) => {
         });
 };
 
-d3.csv('https://www.marketwatch.com/investing/stock/path/downloaddatapartial?startdate=01/03/2022 00:00:00&enddate=11/02/2022 23:59:59&daterange=d30&frequency=p1d&csvdownload=true&downloadpartial=false&newdates=false', type).then((data) => {
+
+
+d3.csv('https://www.marketwatch.com/investing/stock/path/downloaddatapartial?startdate=01/03/2022 00:00:00&enddate=11/02/2022 23:59:59&daterange=d30&frequency=p1d&csvdownload=true&downloadpartial=false&newdates=false', (d) => ({ date: new Date(d.Date).getTime(), price: +d.Close })).then((data) => {
     console.log('data ->', data);
-    ready(data);
+    renderLineChart(data);
 });

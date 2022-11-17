@@ -3,6 +3,10 @@ const margin = { top: 40, left: 40, bottom: 40, right: 40 };
 const width = 800 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
 
+const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
 const formatDate = (x) => {
     const date = new Date(x);
     return `${date.getDate() + 1}/${date.getMonth() + 1}/${date.getFullYear()}`
@@ -153,7 +157,49 @@ const renderHeatmapChart = (data) => {
         });
     };
 
+    const createScales = (d) => {
+        const xExtent = d3.extent(d, i => i.month);
+
+        const xScale = d3.scaleLinear()
+            .domain(xExtent)
+            .range([0, width]);
+
+        const yExtent = d3.extent(d, i => i.avgPrice);
+
+        const yScale = d3.scaleLinear()
+            .domain(yExtent)
+            .range([height, 0]);
+
+        return { xScale, yScale };
+    };
+
+    const drawAxis = (svg, xScale, yScale) => {
+        const xAxis = d3.axisBottom(xScale)
+            .tickFormat((v) => monthNames[v])
+            .ticks(8)
+            .tickSizeOuter(0);
+
+        svg
+            .append('g')
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0, ${height})`)
+            .call(xAxis);
+
+        const yAxis = d3.axisLeft(yScale)
+            .ticks(5)
+            .tickFormat(y => `${y}$`)
+            .tickSizeOuter(0)
+            .tickSizeInner(-width);
+
+        svg
+            .append('g')
+            .attr('class', 'y-axis')
+            .call(yAxis);
+    };
+
     const chartData = transformData(data);
+
+    const { xScale, yScale } = createScales(chartData);
 
     console.log('chartData => ', chartData);
 
@@ -166,6 +212,8 @@ const renderHeatmapChart = (data) => {
         .attr('transform', `translate(${margin.left}, ${margin.top})`)
 
     const svg = renderSvg();
+
+    drawAxis(svg, xScale, yScale);
 };
 
 
@@ -174,7 +222,7 @@ d3.csv('https://www.marketwatch.com/investing/stock/path/downloaddatapartial?sta
         date: new Date(d.Date).getTime(),
         price: +d.Close,
         volume: +d.Volume.replaceAll(',', ''),
-        month: new Date(d.Date).getMonth() + 1,
+        month: new Date(d.Date).getMonth(),
     }))
     .then((data) => {
         console.log('data ->', data);

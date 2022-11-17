@@ -178,7 +178,7 @@ const renderHeatmapChart = (data) => {
             .padding(0.02);
 
         const colorScale = d3.scaleLinear()
-            .range(["white", "#69b3a2"])
+            .range(["#c8e6c9", "#1b5e20"])
             .domain([d3.min(d, d => d.avgVolume), d3.max(d, d => d.avgVolume)])
 
         return { xScale, yScale, colorScale };
@@ -219,7 +219,7 @@ const renderHeatmapChart = (data) => {
             .attr('fill', (d) => colorScale(d.avgVolume))
     }
 
-    const addTooltip = (svg, xScale, yScale) => {
+    const addTooltip = (svg) => {
         const tip = d3.select('.tooltip');
 
         svg.selectAll('rect')
@@ -227,8 +227,8 @@ const renderHeatmapChart = (data) => {
                 tip.style('opacity', 1);
             })
             .on('mousemove', (e, d) => {
-                tip.style('left', `${e.clientX}px`);
-                tip.style('top', `${e.clientY}px`);
+                tip.style('left', `${e.clientX + 20}px`);
+                tip.style('top', `${e.clientY + 20}px`);
 
                 d3.select(e.currentTarget)
                     .attr('stroke-width', 1)
@@ -272,7 +272,7 @@ const renderHeatmapChart = (data) => {
 
     drawAxis(svg, xScale, yScale);
     drawHeatmapItems(svg, chartData, xScale, yScale, colorScale);
-    addTooltip(svg, xScale, yScale);
+    addTooltip(svg);
 };
 
 

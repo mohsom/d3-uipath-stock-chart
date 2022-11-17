@@ -146,37 +146,50 @@ const renderLineChart = (data) => {
 
 const renderHeatmapChart = (data) => {
     const transformData = (input) => {
-        const groups = d3.groups(input, item => item.month);
+        const groups = d3.groups(input, item => item.month, item => item.day);
 
-        return d3.map(groups, (group) => {
-            return {
-                month: group[0],
-                avgPrice: d3.median(group[1], i => i.price),
-                avgVolume: d3.median(group[1], i => i.volume),
-            };
-        });
+        return d3.map(groups, (monthGroup) => {
+            return d3.map(monthGroup[1], (dayGroup) => {
+                return d3.map(dayGroup[1], (d) => {
+                    return {
+                        month: monthGroup[0],
+                        avgPrice: d3.median(dayGroup[1], i => i.price),
+                        avgVolume: d3.median(dayGroup[1], i => i.volume),
+                        day: dayGroup[0],
+                    };
+                })
+            }).flat()
+        }).flat();
     };
 
     const createScales = (d) => {
-        const xExtent = d3.extent(d, i => i.month);
+        const xExtent = d3.map(d, i => i.month);
 
-        const xScale = d3.scaleLinear()
+        const xScale = d3.scaleBand()
             .domain(xExtent)
-            .range([0, width]);
+            .range([0, width])
+            .padding(0.01);
 
-        const yExtent = d3.extent(d, i => i.avgPrice);
+        const yExtent = d3.map(d, i => i.day).sort(d3.ascending);
 
-        const yScale = d3.scaleLinear()
+        const yScale = d3.scaleBand()
             .domain(yExtent)
-            .range([height, 0]);
+            .range([height, 0])
+            .padding(0.01);
 
-        return { xScale, yScale };
+        const colorScale = d3.scaleLinear()
+            .range(["white", "#69b3a2"])
+            .domain([d3.min(d, d => d.avgVolume), d3.max(d, d => d.avgVolume)])
+
+        console.log(xExtent, yExtent);
+
+        return { xScale, yScale, colorScale };
     };
 
     const drawAxis = (svg, xScale, yScale) => {
         const xAxis = d3.axisBottom(xScale)
             .tickFormat((v) => monthNames[v])
-            .ticks(8)
+            .ticks(12)
             .tickSizeOuter(0);
 
         svg
@@ -186,8 +199,7 @@ const renderHeatmapChart = (data) => {
             .call(xAxis);
 
         const yAxis = d3.axisLeft(yScale)
-            .ticks(5)
-            .tickFormat(y => `${y}$`)
+            .ticks(31)
             .tickSizeOuter(0)
             .tickSizeInner(-width);
 
@@ -197,11 +209,21 @@ const renderHeatmapChart = (data) => {
             .call(yAxis);
     };
 
+    const drawHeatmapItems = (svg, d, xScale, yScale, colorScale) => {
+        svg.selectAll()
+            .data(d)
+            .enter()
+            .append('rect')
+            .attr('x', (d) => xScale(d.month))
+            .attr('y', (d) => yScale(d.day))
+            .attr('width', xScale.bandwidth())
+            .attr('height', yScale.bandwidth())
+            .attr('fill', (d) => colorScale(d.avgVolume))
+    }
+
     const chartData = transformData(data);
 
-    const { xScale, yScale } = createScales(chartData);
-
-    console.log('chartData => ', chartData);
+    const { xScale, yScale, colorScale } = createScales(chartData);
 
     // render container
     const renderSvg = () => d3.select('.heatmap')
@@ -214,6 +236,7 @@ const renderHeatmapChart = (data) => {
     const svg = renderSvg();
 
     drawAxis(svg, xScale, yScale);
+    drawHeatmapItems(svg, chartData, xScale, yScale, colorScale);
 };
 
 
@@ -223,6 +246,7 @@ d3.csv('https://www.marketwatch.com/investing/stock/path/downloaddatapartial?sta
         price: +d.Close,
         volume: +d.Volume.replaceAll(',', ''),
         month: new Date(d.Date).getMonth(),
+        day: new Date(d.Date).getDate(),
     }))
     .then((data) => {
         console.log('data ->', data);

@@ -175,7 +175,7 @@ const renderHeatmapChart = (data) => {
         const yScale = d3.scaleBand()
             .domain(yExtent)
             .range([height, 0])
-            .padding(0.01);
+            .padding(0.02);
 
         const colorScale = d3.scaleLinear()
             .range(["white", "#69b3a2"])
@@ -219,6 +219,43 @@ const renderHeatmapChart = (data) => {
             .attr('fill', (d) => colorScale(d.avgVolume))
     }
 
+    const addTooltip = (svg, xScale, yScale) => {
+        const tip = d3.select('.tooltip');
+
+        svg.selectAll('rect')
+            .on('mouseover', (e) => {
+                tip.style('opacity', 1);
+            })
+            .on('mousemove', (e, d) => {
+                tip.style('left', `${e.clientX}px`);
+                tip.style('top', `${e.clientY}px`);
+
+                d3.select(e.currentTarget)
+                    .attr('stroke-width', 1)
+                    .attr('stroke', '#000');
+
+                const bodyData = [
+                    ['Month', monthNames[d.month]],
+                    ['Day', d.day],
+                    ['Avg Volume', d.avgVolume],
+                    ['Avg Price', d.avgPrice],
+                ];
+
+                d3.select('.tip-body')
+                    .selectAll('p')
+                    .data(bodyData)
+                    .join('p')
+                    .attr('class', 'tip-info')
+                    .html(d => `${d[0]}: ${d[1]}`)
+
+            })
+            .on('mouseout', (e) => {
+                tip.style('opacity', 0);
+                d3.select(e.currentTarget)
+                    .attr('stroke-width', 0)
+            });
+    };
+
     const chartData = transformData(data);
 
     const { xScale, yScale, colorScale } = createScales(chartData);
@@ -235,6 +272,7 @@ const renderHeatmapChart = (data) => {
 
     drawAxis(svg, xScale, yScale);
     drawHeatmapItems(svg, chartData, xScale, yScale, colorScale);
+    addTooltip(svg, xScale, yScale);
 };
 
 

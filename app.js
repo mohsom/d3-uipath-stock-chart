@@ -162,62 +162,35 @@ const renderHeatmapChart = (data) => {
         }).flat();
     };
 
-    const createScales = (d) => {
-        const xExtent = d3.map(d, i => i.month);
 
-        const xScale = d3.scaleBand()
-            .domain(xExtent)
-            .range([0, width])
-            .padding(0.01);
-
-        const yExtent = d3.map(d, i => i.day).sort(d3.ascending);
-
-        const yScale = d3.scaleBand()
-            .domain(yExtent)
-            .range([height, 0])
-            .padding(0.02);
-
-        const colorScale = d3.scaleLinear()
-            .range(["#c8e6c9", "#1b5e20"])
-            .domain([d3.min(d, d => d.avgVolume), d3.max(d, d => d.avgVolume)])
-
-        return { xScale, yScale, colorScale };
-    };
-
-    const drawAxis = (svg, xScale, yScale) => {
-        const xAxis = d3.axisBottom(xScale)
-            .tickFormat((v) => monthNames[v])
-            .ticks(12)
-            .tickSizeOuter(0);
-
-        svg
-            .append('g')
-            .attr('class', 'x-axis')
-            .attr('transform', `translate(0, ${height})`)
-            .call(xAxis);
-
-        const yAxis = d3.axisLeft(yScale)
-            .ticks(31)
-            .tickSizeOuter(0)
-            .tickSizeInner(-width);
-
-        svg
-            .append('g')
-            .attr('class', 'y-axis')
-            .call(yAxis);
-    };
 
     const drawHeatmapItems = (svg, d, xScale, yScale, colorScale) => {
-        svg.selectAll()
+        svg.selectAll('rect')
             .data(d)
-            .enter()
-            .append('rect')
-            .attr('x', (d) => xScale(d.month))
-            .attr('y', (d) => yScale(d.day))
-            .attr('width', xScale.bandwidth())
-            .attr('height', yScale.bandwidth())
-            .attr('fill', (d) => colorScale(d.avgVolume))
-    }
+            .join(
+                enter => {
+                    enter.append('rect')
+                        .attr('x', (d) => xScale(d.month))
+                        .attr('y', (d) => yScale(d.day))
+                        .attr('width', xScale.bandwidth())
+                        .attr('height', yScale.bandwidth())
+                        .attr('fill', (d) => colorScale(d.avgVolume))
+                        .transition().duration(300)
+                },
+                update => {
+                    update
+                        .attr('x', (d) => xScale(d.month))
+                        .attr('y', (d) => yScale(d.day))
+                        .attr('width', xScale.bandwidth())
+                        .attr('height', yScale.bandwidth())
+                        .attr('fill', (d) => colorScale(d.avgVolume))
+                        .transition().duration(300)
+                },
+                exit => {
+                    exit.transition().duration(300).style('opacity', 0).remove()
+                },
+            )
+    };
 
     const addTooltip = (svg) => {
         const tip = d3.select('.tooltip');
@@ -258,7 +231,19 @@ const renderHeatmapChart = (data) => {
 
     const chartData = transformData(data);
 
-    const { xScale, yScale, colorScale } = createScales(chartData);
+    const xScale = d3.scaleBand()
+        .domain(d3.map(chartData, i => i.month))
+        .range([0, width])
+        .padding(0.01);
+
+    const yScale = d3.scaleBand()
+        .domain(d3.map(chartData, i => i.day).sort(d3.ascending))
+        .range([height, 0])
+        .padding(0.02);
+
+    const colorScale = d3.scaleLinear()
+        .range(["#c8e6c9", "#1b5e20"])
+        .domain([d3.min(chartData, d => d.avgVolume), d3.max(chartData, d => d.avgVolume)])
 
     // render container
     const renderSvg = () => d3.select('.heatmap')
@@ -270,8 +255,45 @@ const renderHeatmapChart = (data) => {
 
     const svg = renderSvg();
 
-    drawAxis(svg, xScale, yScale);
+
+    // axis
+    const xAxis = d3.axisBottom(xScale)
+        .tickFormat((v) => monthNames[v])
+        .ticks(12)
+        .tickSizeOuter(0);
+
+    const yAxis = d3.axisLeft(yScale)
+        .ticks(31)
+        .tickSizeOuter(0)
+        .tickSizeInner(-width);
+
+    svg
+        .append('g')
+        .attr('class', 'x-axis')
+        .attr('transform', `translate(0, ${height})`)
+        .transition().duration(300)
+        .call(xAxis);
+
+    svg
+        .append('g')
+        .attr('class', 'y-axis')
+        .transition().duration(300)
+        .call(yAxis);
+
     drawHeatmapItems(svg, chartData, xScale, yScale, colorScale);
+
+    d3.select('#upd').on('click', () => {
+        const dataUpdate = chartData.slice(100, 200);
+
+        xScale.domain(d3.map(dataUpdate, i => i.month));
+        yScale.domain(d3.map(dataUpdate, i => i.day).sort(d3.ascending));
+
+        svg.select('.x-axis').transition().duration(300).call(xAxis);
+        svg.select(".y-axis").transition().duration(300).call(yAxis)
+
+        drawHeatmapItems(svg, dataUpdate, xScale, yScale, colorScale);
+    });
+
     addTooltip(svg);
 };
 

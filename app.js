@@ -170,24 +170,26 @@ const renderHeatmapChart = (data) => {
             .join(
                 enter => {
                     enter.append('rect')
+                        .transition().duration(300)
                         .attr('x', (d) => xScale(d.month))
                         .attr('y', (d) => yScale(d.day))
                         .attr('width', xScale.bandwidth())
                         .attr('height', yScale.bandwidth())
                         .attr('fill', (d) => colorScale(d.avgVolume))
-                        .transition().duration(300)
                 },
                 update => {
                     update
+                        .transition().duration(300)
+                        .style('opacity', 0)
                         .attr('x', (d) => xScale(d.month))
                         .attr('y', (d) => yScale(d.day))
                         .attr('width', xScale.bandwidth())
                         .attr('height', yScale.bandwidth())
                         .attr('fill', (d) => colorScale(d.avgVolume))
-                        .transition().duration(300)
+                        .style('opacity', 1)
                 },
                 exit => {
-                    exit.transition().duration(300).style('opacity', 0).remove()
+                    exit.transition().duration(300).style('opacity', 0).remove();
                 },
             )
     };

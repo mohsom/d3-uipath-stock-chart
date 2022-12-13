@@ -41,6 +41,42 @@ const renderBarChart = (data) => {
 
     const barsContainer = svg.append('g');
 
+    const addTooltip = (svg) => {
+        const tip = d3.select('.tooltip');
+
+        svg.selectAll('.bar-group')
+            .on('mouseover', (e) => {
+                tip.style('opacity', 1);
+            })
+            .on('mousemove', (e, d) => {
+                tip.style('left', `${e.clientX + 20}px`);
+                tip.style('top', `${e.clientY + 20}px`);
+
+                d3.select(e.currentTarget)
+                    .attr('stroke-width', 1)
+                    .attr('stroke', '#000');
+
+                const bodyData = [
+                    ['Day', d.day],
+                    ['Productivity', d.productive],
+                    ['Idle', d.idle],
+                ];
+
+                d3.select('.tip-body')
+                    .selectAll('p')
+                    .data(bodyData)
+                    .join('p')
+                    .attr('class', 'tip-info')
+                    .html(d => `${d[0]}: ${d[1]}`)
+
+            })
+            .on('mouseout', (e) => {
+                tip.style('opacity', 0);
+                d3.select(e.currentTarget)
+                    .attr('stroke-width', 0)
+            });
+    };
+
     const drawItems = (arr, xScale, yScale) => {
         const dataJoin = barsContainer
             .selectAll('g')
@@ -95,6 +131,8 @@ const renderBarChart = (data) => {
             exit => {
                 return exit.remove();
             });
+
+        addTooltip(svg);
     };
 
     drawItems(data, x, y);

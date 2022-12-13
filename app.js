@@ -46,34 +46,12 @@ const renderBarChart = (data) => {
         .domain(subgroups)
         .range(['#377eb8', '#e41a1c'])
 
-    // const stackedData = d3.stack()
-    //     .keys(subgroups)
-    //     (data)
-
-    // console.log('stack => ', stackedData);
-
-    // svg.append("g")
-    //     .selectAll("g")
-    //     // Enter in the stack data = loop key per key = group per group
-    //     .data(stackedData)
-    //     .enter()
-    //     .append("g")
-    //     .attr("fill", (d) => color(d.key))
-    //     .selectAll("rect")
-    //     // enter a second time = loop subgroup per subgroup to add all rectangles
-    //     .data((d) => d)
-    //     .enter()
-    //     .append("rect")
-    //     .attr("x", (d) => x(d.data.day))
-    //     .attr("y", (d) => y(d[1]))
-    //     .attr("height", (d) => y(d[0]) - y(d[1]))
-    //     .attr("width", x.bandwidth());
-
     const groupSel = svg.append('g')
         .selectAll('g')
         .data(data)
         .enter()
         .append('g')
+        .attr('class', 'bar-group')
 
     groupSel
         .append('rect')

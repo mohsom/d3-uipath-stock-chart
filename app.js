@@ -7,9 +7,20 @@ const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
 ];
 
+const productivityData = [{ day: 'Monday', productive: 4, idle: 1 }, { day: 'Tuesday', productive: 2, idle: 5 }, { day: 'Wednesday', productive: 8, idle: 3 }]
+
 const formatDate = (x) => {
     const date = new Date(x);
     return `${date.getDate() + 1}/${date.getMonth() + 1}/${date.getFullYear()}`
+};
+
+const renderBarChart = (data) => {
+    const svg = d3.select('.barchart')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left}, ${margin.top})`)
 };
 
 const renderLineChart = (data) => {
@@ -97,7 +108,7 @@ const renderLineChart = (data) => {
         .style('stroke-dasharray', 3)
         .style("opacity", 0);;
 
-    d3.select('svg')
+    d3.select('.chart > svg')
         .on('mouseover', (e) => {
             tip.style('opacity', 1);
             focus.style('display', 'block');
@@ -299,6 +310,8 @@ const renderHeatmapChart = (data) => {
     addTooltip(svg);
 };
 
+
+renderBarChart(productivityData);
 
 d3.csv('https://www.marketwatch.com/investing/stock/path/downloaddatapartial?startdate=01/03/2022 00:00:00&enddate=11/02/2022 23:59:59&daterange=d30&frequency=p1d&csvdownload=true&downloadpartial=false&newdates=false',
     (d) => ({

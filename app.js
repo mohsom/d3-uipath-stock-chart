@@ -28,6 +28,7 @@ const renderBarChart = (data) => {
         .padding(0.02);
 
     svg.append("g")
+        .attr('class', 'x-axis-1')
         .attr('transform', `translate(0, ${height})`)
         .call(d3.axisBottom(x));
 
@@ -38,17 +39,23 @@ const renderBarChart = (data) => {
     svg.append("g")
         .call(d3.axisLeft(y));
 
+    const barsContainer = svg.append('g');
+
     const drawItems = (arr, xScale, yScale) => {
-        svg.append('g')
+        const dataJoin = barsContainer
             .selectAll('g')
             .data(arr)
-            .join(enter => {
+
+        dataJoin.join(
+            enter => {
                 const groupSel = enter
                     .append('g')
                     .attr('class', 'bar-group')
 
                 groupSel
                     .append('rect')
+                    .transition().duration(300)
+                    .attr('class', 'prod')
                     .attr('x', d => xScale(d.day))
                     .attr('y', d => yScale(d.productive))
                     .attr("height", (d) => yScale(0) - yScale(d.productive))
@@ -57,6 +64,8 @@ const renderBarChart = (data) => {
 
                 groupSel
                     .append('rect')
+                    .transition().duration(300)
+                    .attr('class', 'idle')
                     .attr('x', d => xScale(d.day))
                     .attr('y', d => yScale(d.idle) - yScale(0) + yScale(d.productive))
                     .attr("height", (d) => yScale(0) - yScale(d.idle))
@@ -64,14 +73,39 @@ const renderBarChart = (data) => {
                     .attr("fill", '#e41a1c')
 
                 return groupSel;
-            }, update => {
+            },
+            update => {
+                update.selectAll('.prod')
+                    .transition().duration(300)
+                    .attr('x', d => xScale(d.day))
+                    .attr('y', d => yScale(d.productive))
+                    .attr("height", (d) => yScale(0) - yScale(d.productive))
+                    .attr("width", xScale.bandwidth());
+
+                update.selectAll('.idle')
+                    .transition().duration(300)
+                    .attr('x', d => xScale(d.day))
+                    .attr('y', d => yScale(d.idle) - yScale(0) + yScale(d.productive))
+                    .attr("height", (d) => yScale(0) - yScale(d.idle))
+                    .attr("width", xScale.bandwidth())
                 return update;
-            }, exit => {
-                return exit;
+            },
+            exit => {
+                return exit.remove();
             });
     };
 
     drawItems(data, x, y);
+
+    d3.select('#upd-bar').on('click', () => {
+        const dataUpdate = [...data, { day: 'Thursday', productive: 6, idle: 1 }];
+
+        x.domain(d3.map(dataUpdate, d => d.day));
+
+        svg.select('.x-axis-1').transition().duration(300).call(d3.axisBottom(x));
+
+        drawItems(dataUpdate, x, y);
+    });
 };
 
 const renderLineChart = (data) => {

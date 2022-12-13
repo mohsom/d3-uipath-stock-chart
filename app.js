@@ -46,26 +46,50 @@ const renderBarChart = (data) => {
         .domain(subgroups)
         .range(['#377eb8', '#e41a1c'])
 
-    const stackedData = d3.stack()
-        .keys(subgroups)
-        (data)
+    // const stackedData = d3.stack()
+    //     .keys(subgroups)
+    //     (data)
 
-    svg.append("g")
-        .selectAll("g")
-        // Enter in the stack data = loop key per key = group per group
-        .data(stackedData)
+    // console.log('stack => ', stackedData);
+
+    // svg.append("g")
+    //     .selectAll("g")
+    //     // Enter in the stack data = loop key per key = group per group
+    //     .data(stackedData)
+    //     .enter()
+    //     .append("g")
+    //     .attr("fill", (d) => color(d.key))
+    //     .selectAll("rect")
+    //     // enter a second time = loop subgroup per subgroup to add all rectangles
+    //     .data((d) => d)
+    //     .enter()
+    //     .append("rect")
+    //     .attr("x", (d) => x(d.data.day))
+    //     .attr("y", (d) => y(d[1]))
+    //     .attr("height", (d) => y(d[0]) - y(d[1]))
+    //     .attr("width", x.bandwidth());
+
+    const groupSel = svg.append('g')
+        .selectAll('g')
+        .data(data)
         .enter()
-        .append("g")
-        .attr("fill", (d) => color(d.key))
-        .selectAll("rect")
-        // enter a second time = loop subgroup per subgroup to add all rectangles
-        .data((d) => d)
-        .enter()
-        .append("rect")
-        .attr("x", (d) => x(d.data.day))
-        .attr("y", (d) => y(d[1]))
-        .attr("height", (d) => y(d[0]) - y(d[1]))
-        .attr("width", x.bandwidth());
+        .append('g')
+
+    groupSel
+        .append('rect')
+        .attr('x', d => x(d.day))
+        .attr('y', d => y(d.productive))
+        .attr("height", (d) => y(0) - y(d.productive))
+        .attr("width", x.bandwidth())
+        .attr("fill", '#377eb8')
+
+    groupSel
+        .append('rect')
+        .attr('x', d => x(d.day))
+        .attr('y', d => y(d.idle) - y(0) + y(d.productive))
+        .attr("height", (d) => y(0) - y(d.idle))
+        .attr("width", x.bandwidth())
+        .attr("fill", '#e41a1c')
 };
 
 const renderLineChart = (data) => {

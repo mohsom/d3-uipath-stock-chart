@@ -21,6 +21,51 @@ const renderBarChart = (data) => {
         .attr('height', height + margin.top + margin.bottom)
         .append('g')
         .attr('transform', `translate(${margin.left}, ${margin.top})`)
+
+    const x = d3.scaleBand()
+        .domain(d3.map(data, d => d.day))
+        .range([0, width])
+        .padding(0.02);
+
+    x.bandwidth(100)
+
+    svg.append("g")
+        .attr('transform', `translate(0, ${height})`)
+        .call(d3.axisBottom(x));
+
+    const y = d3.scaleLinear()
+        .domain([0, 15])
+        .range([height, 0]);
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    const subgroups = ['productive', 'idle'];
+
+    const color = d3.scaleOrdinal()
+        .domain(subgroups)
+        .range(['#377eb8', '#e41a1c'])
+
+    const stackedData = d3.stack()
+        .keys(subgroups)
+        (data)
+
+    svg.append("g")
+        .selectAll("g")
+        // Enter in the stack data = loop key per key = group per group
+        .data(stackedData)
+        .enter()
+        .append("g")
+        .attr("fill", (d) => color(d.key))
+        .selectAll("rect")
+        // enter a second time = loop subgroup per subgroup to add all rectangles
+        .data((d) => d)
+        .enter()
+        .append("rect")
+        .attr("x", (d) => x(d.data.day))
+        .attr("y", (d) => y(d[1]))
+        .attr("height", (d) => y(d[0]) - y(d[1]))
+        .attr("width", x.bandwidth());
 };
 
 const renderLineChart = (data) => {

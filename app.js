@@ -54,22 +54,24 @@ const renderBarChart = (data) => {
 
                 groupSel
                     .append('rect')
-                    .transition().duration(300)
                     .attr('class', 'prod')
-                    .attr('x', d => xScale(d.day))
+                    .attr("width", xScale.bandwidth())
                     .attr('y', d => yScale(d.productive))
                     .attr("height", (d) => yScale(0) - yScale(d.productive))
-                    .attr("width", xScale.bandwidth())
+                    .transition().duration(300)
+                    .attr('x', d => xScale(d.day))
+                    .attr('opacity', 1)
                     .attr("fill", '#377eb8')
 
                 groupSel
                     .append('rect')
-                    .transition().duration(300)
                     .attr('class', 'idle')
-                    .attr('x', d => xScale(d.day))
+                    .attr("width", xScale.bandwidth())
                     .attr('y', d => yScale(d.idle) - yScale(0) + yScale(d.productive))
                     .attr("height", (d) => yScale(0) - yScale(d.idle))
-                    .attr("width", xScale.bandwidth())
+                    .transition().duration(300)
+                    .attr('x', d => xScale(d.day))
+                    .attr('opacity', 1)
                     .attr("fill", '#e41a1c')
 
                 return groupSel;

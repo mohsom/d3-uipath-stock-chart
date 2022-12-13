@@ -27,8 +27,6 @@ const renderBarChart = (data) => {
         .range([0, width])
         .padding(0.02);
 
-    x.bandwidth(100)
-
     svg.append("g")
         .attr('transform', `translate(0, ${height})`)
         .call(d3.axisBottom(x));
@@ -40,28 +38,40 @@ const renderBarChart = (data) => {
     svg.append("g")
         .call(d3.axisLeft(y));
 
-    const groupSel = svg.append('g')
-        .selectAll('g')
-        .data(data)
-        .enter()
-        .append('g')
-        .attr('class', 'bar-group')
+    const drawItems = (arr, xScale, yScale) => {
+        svg.append('g')
+            .selectAll('g')
+            .data(arr)
+            .join(enter => {
+                const groupSel = enter
+                    .append('g')
+                    .attr('class', 'bar-group')
 
-    groupSel
-        .append('rect')
-        .attr('x', d => x(d.day))
-        .attr('y', d => y(d.productive))
-        .attr("height", (d) => y(0) - y(d.productive))
-        .attr("width", x.bandwidth())
-        .attr("fill", '#377eb8')
+                groupSel
+                    .append('rect')
+                    .attr('x', d => xScale(d.day))
+                    .attr('y', d => yScale(d.productive))
+                    .attr("height", (d) => yScale(0) - yScale(d.productive))
+                    .attr("width", xScale.bandwidth())
+                    .attr("fill", '#377eb8')
 
-    groupSel
-        .append('rect')
-        .attr('x', d => x(d.day))
-        .attr('y', d => y(d.idle) - y(0) + y(d.productive))
-        .attr("height", (d) => y(0) - y(d.idle))
-        .attr("width", x.bandwidth())
-        .attr("fill", '#e41a1c')
+                groupSel
+                    .append('rect')
+                    .attr('x', d => xScale(d.day))
+                    .attr('y', d => yScale(d.idle) - yScale(0) + yScale(d.productive))
+                    .attr("height", (d) => yScale(0) - yScale(d.idle))
+                    .attr("width", xScale.bandwidth())
+                    .attr("fill", '#e41a1c')
+
+                return groupSel;
+            }, update => {
+                return update;
+            }, exit => {
+                return exit;
+            });
+    };
+
+    drawItems(data, x, y);
 };
 
 const renderLineChart = (data) => {
@@ -363,7 +373,6 @@ d3.csv('https://www.marketwatch.com/investing/stock/path/downloaddatapartial?sta
         day: new Date(d.Date).getDate(),
     }))
     .then((data) => {
-        console.log('data ->', data);
         renderLineChart(data);
         renderHeatmapChart(data);
     });

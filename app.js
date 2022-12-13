@@ -40,12 +40,6 @@ const renderBarChart = (data) => {
     svg.append("g")
         .call(d3.axisLeft(y));
 
-    const subgroups = ['productive', 'idle'];
-
-    const color = d3.scaleOrdinal()
-        .domain(subgroups)
-        .range(['#377eb8', '#e41a1c'])
-
     const groupSel = svg.append('g')
         .selectAll('g')
         .data(data)

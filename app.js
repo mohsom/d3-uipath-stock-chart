@@ -15,12 +15,18 @@ const formatDate = (x) => {
 };
 
 const renderBarChart = (data) => {
+
+    let { width, height } = document.querySelector('.wrap').getBoundingClientRect();
+
+    width = width - margin.left - margin.right;
+    height = height - margin.top - margin.bottom;
+
     const svg = d3.select('.barchart')
         .append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top})`)
+        .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
     const x = d3.scaleBand()
         .domain(d3.map(data, d => d.day))
@@ -145,6 +151,25 @@ const renderBarChart = (data) => {
         svg.select('.x-axis-1').transition().duration(300).call(d3.axisBottom(x));
 
         drawItems(dataUpdate, x, y);
+    });
+
+    window.addEventListener('resize', () => {
+        let { width, height } = document.querySelector('.wrap').getBoundingClientRect();
+
+        width = width - margin.left - margin.right;
+        height = height - margin.top - margin.bottom;
+
+        svg
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+
+        x.range([0, width]);
+        y.range([height, 0]);
+
+        svg.select('.x-axis-1').transition().duration(300).call(d3.axisBottom(x));
+        svg.select('.y-axis-1').transition().duration(300).call(d3.axisLeft(y));
+
+        drawItems(data, x, y);
     });
 };
 
